@@ -82,9 +82,11 @@ class VoiceRoomManager extends Event_1.default {
             const channel = oldState.channel;
             if (!channel)
                 return;
-            if (!this.managedChannels.has(channel.id))
+            // Either it's tracked OR it looks like a managed channel (optional pattern check)
+            if (!this.managedChannels.has(channel.id) && !channel.name.endsWith("'s Room"))
                 return;
             if (channel.members.size === 0) {
+                console.log(`[VoiceRoomManager] Deleting empty channel: ${channel.name}`);
                 yield this.destroyVoiceRoom(channel, "Channel empty after members left.");
             }
         });

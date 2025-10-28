@@ -88,10 +88,12 @@ export default class VoiceRoomManager extends Event {
     private async handleVacatedChannel(oldState: VoiceState): Promise<void> {
         const channel = oldState.channel;
         if (!channel) return;
-
-        if (!this.managedChannels.has(channel.id)) return;
-
+    
+        // Either it's tracked OR it looks like a managed channel (optional pattern check)
+        if (!this.managedChannels.has(channel.id) && !channel.name.endsWith("'s Room")) return;
+    
         if (channel.members.size === 0) {
+            console.log(`[VoiceRoomManager] Deleting empty channel: ${channel.name}`);
             await this.destroyVoiceRoom(channel, "Channel empty after members left.");
         }
     }

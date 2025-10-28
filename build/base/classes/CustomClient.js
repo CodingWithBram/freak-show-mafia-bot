@@ -18,6 +18,7 @@ class CustomClient extends discord_js_1.Client {
     constructor() {
         super({
             intents: [
+                discord_js_1.GatewayIntentBits.Guilds,
                 discord_js_1.GatewayIntentBits.GuildVoiceStates,
             ],
         });
