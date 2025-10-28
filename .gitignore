@@ -114,7 +114,8 @@ dist
 # FuseBox cache# ...existing code...
 
 # Ignore build folder
-build/
+src/
+secrets.json
 
 # Ignore data folder
 
