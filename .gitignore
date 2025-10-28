@@ -117,7 +117,6 @@ dist
 build/
 
 # Ignore data folder
-data/
 
 # Ignore node_modules (already present, but keeping for clarity)
 node_modules/
