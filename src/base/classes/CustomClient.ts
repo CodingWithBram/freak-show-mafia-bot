@@ -28,9 +28,15 @@ export default class CustomClient extends Client {
 
   public async Init(): Promise<void> {
     this.LoadHandlers();
-
-    this.login(this.config.token)
-      .catch((err) => console.error(err))
+  
+    // Prefer environment variable (Render) over local config file (dev)
+    const token = process.env.TOKEN || this.config.token;
+  
+    if (!token) {
+      throw new Error("❌ Missing Discord token! Set TOKEN in Render environment variables or config.json.");
+    }
+  
+    this.login(token).catch((err) => console.error(err));
   }
   
   private LoadHandlers(): void {
