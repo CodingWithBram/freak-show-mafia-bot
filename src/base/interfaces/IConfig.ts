@@ -6,7 +6,6 @@ export default interface IConfig {
   voiceRooms?: {
     hubChannelId: string;
     categoryId?: string;
-    bitrate?: number;
     userLimit?: number;
     maxRooms?: number;
   };
