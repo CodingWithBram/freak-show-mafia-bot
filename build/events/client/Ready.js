@@ -27,21 +27,27 @@ class Ready extends Event_1.default {
             var _a;
             console.log(`${(_a = this.client.user) === null || _a === void 0 ? void 0 : _a.tag} is now ready!`);
             const commands = this.GetJson(this.client.commands);
-            const rest = new discord_js_1.REST().setToken(this.client.config.token);
-            const setCommands = yield rest.put(discord_js_1.Routes.applicationGuildCommands(this.client.config.clientId, this.client.config.guildId), {
-                body: commands
-            });
-            console.log(`Successfully registered ${setCommands.length} application commands.`);
+            // Use environment variable if available, fallback to config.json
+            const token = process.env.TOKEN || this.client.config.token;
+            const clientId = process.env.CLIENT_ID || this.client.config.clientId;
+            const guildId = process.env.GUILD_ID || this.client.config.guildId;
+            if (!token || !clientId || !guildId) {
+                throw new Error("❌ Missing TOKEN, CLIENT_ID, or GUILD_ID. Check your environment variables or config.json.");
+            }
+            const rest = new discord_js_1.REST().setToken(token);
+            const setCommands = yield rest.put(discord_js_1.Routes.applicationGuildCommands(clientId, guildId), { body: commands });
+            console.log(`✅ Successfully registered ${setCommands.length} application commands.`);
         });
     }
     GetJson(commands) {
         const data = [];
-        commands.forEach(command => {
+        commands.forEach((command) => {
+            var _a;
             data.push({
                 name: command.name,
                 description: command.description,
                 options: command.options,
-                default_member_permissions: command.default_member_permissions.toString(),
+                default_member_permissions: (_a = command.default_member_permissions) === null || _a === void 0 ? void 0 : _a.toString(),
                 dm_permission: command.dm_permission,
             });
         });

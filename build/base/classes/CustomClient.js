@@ -31,8 +31,14 @@ class CustomClient extends discord_js_1.Client {
     Init() {
         return __awaiter(this, void 0, void 0, function* () {
             this.LoadHandlers();
-            this.login(this.config.token)
-                .catch((err) => console.error(err));
+            const token = process.env.TOKEN || this.config.token;
+            if (!token) {
+                console.error("❌ No token found in environment or config.json!");
+            }
+            else {
+                console.log("✅ Token found, first few characters:", token.substring(0, 10));
+            }
+            yield this.login(token).catch((err) => console.error(err));
         });
     }
     LoadHandlers() {
