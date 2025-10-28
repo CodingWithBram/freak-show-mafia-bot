@@ -3,10 +3,8 @@ export default interface IConfig {
   clientId: string;
   guildId: string;
 
-  voiceRooms?: {
-    hubChannelId: string;
-    categoryId?: string;
-    userLimit?: number;
-    maxRooms?: number;
-  };
+  hubChannelId: string;
+  categoryId?: string;
+  userLimit?: number;
+  maxRooms?: number;
 }

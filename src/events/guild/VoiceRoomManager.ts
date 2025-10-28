@@ -8,14 +8,7 @@ import {
 } from "discord.js";
 import Event from "../../base/classes/Event";
 import CustomClient from "../../base/classes/CustomClient";
-
-interface VoiceRoomConfig {
-    hubChannelId: string;
-    categoryId?: string;
-    bitrate?: number;
-    userLimit?: number;
-    maxRooms?: number;
-}
+import IConfig from "../../base/interfaces/IConfig"; // Make sure this path matches your project
 
 export default class VoiceRoomManager extends Event {
     private managedChannels: Set<string>;
@@ -36,14 +29,18 @@ export default class VoiceRoomManager extends Event {
         const config = this.getConfig();
         if (!config) return;
 
+        // Handle if someone left a managed channel
         await this.handleVacatedChannel(oldState);
 
+        // Only trigger when someone joins the hub channel
         if (newState.channelId !== config.hubChannelId) return;
         if (!newState.member || newState.member.user.bot) return;
 
         const guild = newState.guild;
+        const memberId = newState.member.id;
 
-        const existingRoomId = this.memberRooms.get(newState.member.id);
+        // Check if the member already has a room
+        const existingRoomId = this.memberRooms.get(memberId);
         if (existingRoomId) {
             const existingChannel = guild.channels.cache.get(existingRoomId);
             if (existingChannel && this.isVoiceChannel(existingChannel)) {
@@ -55,10 +52,12 @@ export default class VoiceRoomManager extends Event {
                 return;
             }
 
-            this.memberRooms.delete(newState.member.id);
+            // Clean up broken references
+            this.memberRooms.delete(memberId);
             this.managedChannels.delete(existingRoomId);
         }
 
+        // Limit how many personal rooms can exist
         if (config.maxRooms && this.managedChannels.size >= config.maxRooms) {
             console.warn("[VoiceRoomManager] Maximum number of managed voice rooms reached.");
             return;
@@ -68,7 +67,7 @@ export default class VoiceRoomManager extends Event {
         if (!channel) return;
 
         this.managedChannels.add(channel.id);
-        this.memberRooms.set(newState.member.id, channel.id);
+        this.memberRooms.set(memberId, channel.id);
 
         await newState
             .setChannel(channel, "Moving member to their personal voice room.")
@@ -77,9 +76,10 @@ export default class VoiceRoomManager extends Event {
             });
     }
 
-    private getConfig(): VoiceRoomConfig | null {
-        const config = this.client.config.voiceRooms;
+    private getConfig(): IConfig | null {
+        const config = this.client.config as IConfig;
         if (!config?.hubChannelId) {
+            console.warn("[VoiceRoomManager] Missing hubChannelId in config.");
             return null;
         }
         return config;
@@ -99,11 +99,10 @@ export default class VoiceRoomManager extends Event {
     private async createVoiceRoom(
         guild: Guild,
         displayName: string,
-        config: VoiceRoomConfig
+        config: IConfig
     ): Promise<VoiceChannel | null> {
         const channelName = this.buildChannelName(displayName);
 
-        // We do not set the bitrate; Discord will choose the default based on the guild’s level.
         try {
             const channel = await guild.channels.create({
                 name: channelName,
@@ -138,11 +137,6 @@ export default class VoiceRoomManager extends Event {
         }
     }
 
-    // Return undefined so no bitrate is specified.
-    private resolveBitrate(guild: Guild, requested?: number): number | undefined {
-        return undefined;
-    }
-
     private buildChannelName(displayName: string): string {
         const baseName = displayName
             .replace(/[\n\r]+/g, " ")
@@ -150,7 +144,6 @@ export default class VoiceRoomManager extends Event {
             .trim();
 
         const finalName = baseName ? `${baseName}'s Room` : "Private Room";
-
         return finalName.substring(0, 100);
     }
 
