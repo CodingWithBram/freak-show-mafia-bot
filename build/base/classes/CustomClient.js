@@ -22,7 +22,7 @@ class CustomClient extends discord_js_1.Client {
                 discord_js_1.GatewayIntentBits.GuildVoiceStates,
             ],
         });
-        this.config = require(`${process.cwd()}/data/config.json`);
+        this.config = require(`${process.cwd()}/build/data/config.json`);
         this.handler = new Handler_1.default(this);
         this.commands = new discord_js_1.Collection();
         this.subCommands = new discord_js_1.Collection();
