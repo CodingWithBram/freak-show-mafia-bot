@@ -19,7 +19,7 @@ export default class CustomClient extends Client {
       ],
     });
 
-    this.config = require(`${process.cwd()}/build/data/config.json`);
+    this.config = require(`${process.cwd()}/data/config.json`);
     this.handler = new Handler(this);
     this.commands = new Collection();
     this.subCommands = new Collection();
