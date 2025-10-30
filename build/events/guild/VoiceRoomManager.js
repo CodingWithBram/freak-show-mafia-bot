@@ -21,18 +21,21 @@ class VoiceRoomManager extends Event_1.default {
             description: "Creates ad-hoc personal voice rooms when members join the lobby channel.",
             once: false,
         });
+        // 🔥 Hardcoded values
+        this.HUB_CHANNEL_ID = "1432852656765796393";
+        this.CATEGORY_ID = "1432852416566661220";
+        this.BITRATE = 64000;
+        this.USER_LIMIT = 15;
+        this.MAX_ROOMS = 15;
         this.managedChannels = new Set();
         this.memberRooms = new Map();
     }
     Execute(oldState, newState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const config = this.getConfig();
-            if (!config)
-                return;
             // Handle if someone left a managed channel
             yield this.handleVacatedChannel(oldState);
             // Only trigger when someone joins the hub channel
-            if (newState.channelId !== config.hubChannelId)
+            if (newState.channelId !== this.HUB_CHANNEL_ID)
                 return;
             if (!newState.member || newState.member.user.bot)
                 return;
@@ -53,11 +56,11 @@ class VoiceRoomManager extends Event_1.default {
                 this.managedChannels.delete(existingRoomId);
             }
             // Limit how many personal rooms can exist
-            if (config.maxRooms && this.managedChannels.size >= config.maxRooms) {
+            if (this.managedChannels.size >= this.MAX_ROOMS) {
                 console.warn("[VoiceRoomManager] Maximum number of managed voice rooms reached.");
                 return;
             }
-            const channel = yield this.createVoiceRoom(guild, newState.member.displayName, config);
+            const channel = yield this.createVoiceRoom(guild, newState.member.displayName);
             if (!channel)
                 return;
             this.managedChannels.add(channel.id);
@@ -68,14 +71,6 @@ class VoiceRoomManager extends Event_1.default {
                 console.error("[VoiceRoomManager] Failed to move member:", error);
             });
         });
-    }
-    getConfig() {
-        const config = this.client.config;
-        if (!(config === null || config === void 0 ? void 0 : config.hubChannelId)) {
-            console.warn("[VoiceRoomManager] Missing hubChannelId in config.");
-            return null;
-        }
-        return config;
     }
     handleVacatedChannel(oldState) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -91,15 +86,16 @@ class VoiceRoomManager extends Event_1.default {
             }
         });
     }
-    createVoiceRoom(guild, displayName, config) {
+    createVoiceRoom(guild, displayName) {
         return __awaiter(this, void 0, void 0, function* () {
             const channelName = this.buildChannelName(displayName);
             try {
                 const channel = yield guild.channels.create({
                     name: channelName,
                     type: discord_js_1.ChannelType.GuildVoice,
-                    parent: config.categoryId,
-                    userLimit: config.userLimit,
+                    parent: this.CATEGORY_ID,
+                    userLimit: this.USER_LIMIT,
+                    bitrate: this.BITRATE,
                     reason: `Auto-generated voice room for ${displayName}`,
                 });
                 return this.isVoiceChannel(channel) ? channel : null;
