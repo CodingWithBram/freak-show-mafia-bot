@@ -14,4 +14,4 @@ app.listen(PORT, () => {
 });
 
 // --- Start the Discord Bot ---
-(new CustomClient()).Init();
+(new CustomClient).Init();

@@ -20,6 +20,7 @@ class CustomClient extends discord_js_1.Client {
             intents: [
                 discord_js_1.GatewayIntentBits.Guilds,
                 discord_js_1.GatewayIntentBits.GuildVoiceStates,
+                discord_js_1.GatewayIntentBits.GuildMessages, // ✅ Needed for sending messages
             ],
         });
         this.config = require(`${process.cwd()}/data/config.json`);
@@ -40,6 +41,20 @@ class CustomClient extends discord_js_1.Client {
                 console.log("✅ Token found, first few characters:", token.substring(0, 10));
             }
             yield this.login(token).catch((err) => console.error(err));
+            // ✅ Send "Bot is still online" every 200 seconds after the bot is ready
+            this.once("ready", () => {
+                var _a;
+                console.log(`✅ Logged in as ${(_a = this.user) === null || _a === void 0 ? void 0 : _a.tag}`);
+                const CHANNEL_ID = "1432852656765796393"; // 🔥 replace with your channel ID
+                const channel = this.channels.cache.get(CHANNEL_ID);
+                if (!channel) {
+                    console.error("❌ Could not find the target channel for status messages!");
+                    return;
+                }
+                setInterval(() => {
+                    channel.send("✅ Bot is still online").catch(console.error);
+                }, 200000); // every 200 seconds
+            });
         });
     }
     LoadHandlers() {

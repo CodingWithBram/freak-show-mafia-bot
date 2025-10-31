@@ -15,4 +15,4 @@ app.listen(PORT, () => {
     console.log(`🌐 Keep-alive server listening on port ${PORT}`);
 });
 // --- Start the Discord Bot ---
-(new CustomClient_1.default()).Init();
+(new CustomClient_1.default).Init();
